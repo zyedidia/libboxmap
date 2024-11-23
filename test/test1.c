@@ -7,7 +7,7 @@ static size_t gb(size_t x) {
     return x * 1024 * 1024 * 1024;
 }
 
-int main() {
+int main(void) {
     struct BoxMap* map = boxmap_new((struct BoxMapOptions) {
         .minalign = gb(4),
         .maxalign = gb(4),
