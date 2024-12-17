@@ -16,7 +16,7 @@ int main(void) {
     assert(map);
 
     boxmap_reserve(map, 0);
-    printf("total size: %ld\n", boxmap_size(map));
+    printf("total size: %ld\n", (long) boxmap_size(map));
 
     uintptr_t space = boxmap_addspace(map, gb(4));
     printf("space: %lx\n", space);
