@@ -1,5 +1,6 @@
 tests = [
   'test1.c',
+  'test2.c',
 ]
 
 foreach t : tests

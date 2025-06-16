@@ -7,13 +7,15 @@
 #include "map.h"
 
 static uintptr_t truncp(uintptr_t addr, size_t align) {
-    size_t align_mask = align - 1;
-    return addr & ~align_mask;
+    return addr - (addr % align);
 }
 
 static uintptr_t ceilp(uintptr_t addr, size_t align) {
-    size_t align_mask = align - 1;
-    return (addr + align_mask) & ~align_mask;
+    uintptr_t rem = addr % align;
+    if (rem == 0) {
+        return addr;
+    }
+    return addr + (align - rem);
 }
 
 static size_t gb(size_t x) {
