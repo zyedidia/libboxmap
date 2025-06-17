@@ -7,12 +7,6 @@
 
 #include "map.h"
 
-static size_t
-max(size_t a, size_t b)
-{
-    return a > b ? a : b;
-}
-
 struct ExtAlloc *
 extalloc_new(uintptr_t base, size_t size, size_t chunksize)
 {
@@ -24,7 +18,7 @@ extalloc_new(uintptr_t base, size_t size, size_t chunksize)
     struct ExtAlloc *a = malloc(sizeof(struct ExtAlloc));
     if (!a)
         return NULL;
-    uint8_t *bitvec = calloc(max(size / 8, 1), 1);
+    uint8_t *bitvec = calloc(size / 8 + 1, 1);
     if (!bitvec) {
         free(a);
         return NULL;
