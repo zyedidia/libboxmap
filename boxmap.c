@@ -66,8 +66,6 @@ static size_t reserve(size_t size, size_t threshold, void** base) {
         p = mmap(NULL, size, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
         if (p == (void*) -1) {
             size /= 2;
-        } else {
-            munmap(p, size);
         }
         if (size < threshold)
             return 0;
