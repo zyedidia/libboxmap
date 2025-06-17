@@ -3,8 +3,15 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "map.h"
+
+static size_t
+max(size_t a, size_t b)
+{
+    return a > b ? a : b;
+}
 
 struct ExtAlloc *
 extalloc_new(uintptr_t base, size_t size, size_t chunksize)
@@ -17,7 +24,7 @@ extalloc_new(uintptr_t base, size_t size, size_t chunksize)
     struct ExtAlloc *a = malloc(sizeof(struct ExtAlloc));
     if (!a)
         return NULL;
-    uint8_t *bitvec = calloc(size / 8, 1);
+    uint8_t *bitvec = calloc(max(size / 8, 1), 1);
     if (!bitvec) {
         free(a);
         return NULL;
@@ -80,8 +87,8 @@ bitvec_set(uint8_t *bitvec, size_t start, size_t length, int val) {
 bool
 extalloc_is_full(struct ExtAlloc *a)
 {
-    for (size_t i = 0; i < a->size / 8; i++) {
-        if (a->bitvec[i] != 1)
+    for (size_t i = 0; i < a->size; i++) {
+        if (bit(a->bitvec, i) != 1)
             return false;
     }
     return true;
@@ -92,7 +99,7 @@ extalloc_alloc(struct ExtAlloc *a, size_t n)
 {
     assert(n % a->chunksize == 0);
     n /= a->chunksize;
-    ssize_t idx = bitvec_find_zeroes(a->bitvec, a->size / 8, n);
+    ssize_t idx = bitvec_find_zeroes(a->bitvec, a->size, n);
     if (idx == -1)
         return 0;
     bitvec_set(a->bitvec, idx, n, 1);

@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <stdio.h>
 
 #include "err.h"
 #include "map.h"
