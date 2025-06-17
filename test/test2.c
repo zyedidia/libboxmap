@@ -9,13 +9,12 @@ static size_t gb(size_t x) {
 
 int main(void) {
     struct BoxMap* map = boxmap_new((struct BoxMapOptions) {
-        .minalign = gb(4),
-        .maxalign = gb(4),
+        .chunksize = gb(4),
         .guardsize = gb(40),
     });
     assert(map);
 
-    bool ok = boxmap_reserve(map, gb(1024));
+    bool ok = boxmap_reserve(map, gb(348));
     assert(ok);
     printf("total size: %ld\n", (long) boxmap_size(map));
 

@@ -2,7 +2,7 @@ project('libboxmap', ['c'], default_options: ['warning_level=3', 'buildtype=debu
 
 srcs = files(
   'boxmap.c',
-  'buddy.c',
+  'extalloc.c',
   'err.c',
 )
 

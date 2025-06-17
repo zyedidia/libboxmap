@@ -9,8 +9,7 @@ static size_t gb(size_t x) {
 
 int main(void) {
     struct BoxMap* map = boxmap_new((struct BoxMapOptions) {
-        .minalign = gb(4),
-        .maxalign = gb(4),
+        .chunksize = gb(4),
         .guardsize = gb(4),
     });
     assert(map);
@@ -21,7 +20,9 @@ int main(void) {
 
     uintptr_t space = boxmap_addspace(map, gb(4));
     printf("space: %lx\n", space);
-
+    boxmap_rmspace(map, space, gb(4));
+    space = boxmap_addspace(map, gb(4));
+    printf("space: %lx\n", space);
     boxmap_rmspace(map, space, gb(4));
 
     return 0;

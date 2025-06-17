@@ -5,11 +5,10 @@
 #include <stddef.h>
 
 struct BoxMapOptions {
-    // Alignment for allocations inside of regions.
-    size_t minalign;
-    // Alignment for regions.
-    size_t maxalign;
-    // Size of space to reserve on either end of a region.
+    // Size in bytes of the minimum allocatable chunk.
+    size_t chunksize;
+    // Size in bytes to reserve on either end of a region. Must be zero or a
+    // multiple of the chunk size.
     size_t guardsize;
 };
 

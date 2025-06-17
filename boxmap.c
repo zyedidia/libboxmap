@@ -76,24 +76,18 @@ static size_t reserve(size_t size, size_t threshold, void** base) {
     return size;
 }
 
-static struct buddy* buddynew(void* base, size_t size, size_t align) {
-    unsigned char* at = malloc(buddy_sizeof_alignment(size, align));
-    if (!at) {
-        return NULL;
-    }
-    return buddy_init_alignment(at, base, size, align);
-}
-
 static bool addregion(struct BoxMap* map, void* base, size_t size) {
     if (map->nregions >= ADDR_REGION_MAX) {
         g_err = "boxmap: no available regions";
         return false;
     }
 
-    uintptr_t alignbase = ceilp((uintptr_t) base, map->opts.maxalign);
-    size_t alignsize = truncp(alignbase + (size - (alignbase - (uintptr_t) base)), map->opts.maxalign) - alignbase;
+    // Since mmap gives us something page-aligned, we need to find a region
+    // within it that is properly chunk-aligned.
+    uintptr_t alignbase = ceilp((uintptr_t) base, map->opts.chunksize);
+    size_t alignsize = truncp(alignbase + (size - (alignbase - (uintptr_t) base)), map->opts.chunksize) - alignbase;
 
-    struct buddy* alloc = buddynew((void*) alignbase, alignsize, map->opts.minalign);
+    struct ExtAlloc* alloc = extalloc_new(alignbase, alignsize, map->opts.chunksize);
     if (!alloc)
         return false;
 
@@ -104,10 +98,9 @@ static bool addregion(struct BoxMap* map, void* base, size_t size) {
         return false;
     }
 
-    // To be safe we will reserve the start and end sandboxes of the region, in
-    // case the region is directly adjacent to some sensitive data.
-    buddy_reserve_range(alloc, (void*) alignbase, map->opts.guardsize);
-    buddy_reserve_range(alloc, (void*) (alignbase + alignsize - map->opts.guardsize), map->opts.guardsize);
+    // Reserve the guard regions on either end of the new region.
+    extalloc_allocat(alloc, alignbase, map->opts.guardsize);
+    extalloc_allocat(alloc, alignbase + alignsize - map->opts.guardsize, map->opts.guardsize);
 
     map->regions[map->nregions++] = (struct AddrRegion) {
         .base = (void*) alignbase,
@@ -153,7 +146,7 @@ bool boxmap_reserve(struct BoxMap* map, size_t size) {
 
 static bool isfull(struct BoxMap* map) {
     for (size_t i = 0; i < map->nregions; i++) {
-        if (!buddy_is_full(map->regions[i].alloc))
+        if (!extalloc_is_full(map->regions[i].alloc))
             return false;
     }
     return true;
@@ -162,9 +155,9 @@ static bool isfull(struct BoxMap* map) {
 // This function can only be called if the engine is not full.
 static uintptr_t allocslot(struct BoxMap* map, size_t size) {
     for (size_t i = 0; i < map->nregions; i++) {
-        if (!buddy_is_full(map->regions[i].alloc)) {
+        if (!extalloc_is_full(map->regions[i].alloc)) {
             map->regions[i].active++;
-            return (uintptr_t) buddy_malloc(map->regions[i].alloc, size);
+            return extalloc_alloc(map->regions[i].alloc, size);
         }
     }
     assert(!"unreachable: engine was full");
@@ -174,8 +167,7 @@ static void deleteslot(struct BoxMap* map, uintptr_t base, size_t size) {
     for (size_t i = 0; i < map->nregions; i++) {
         uintptr_t vabase = (uintptr_t) map->regions[i].base;
         if (base >= vabase && base < vabase + map->regions[i].size) {
-            int b = buddy_safe_free(map->regions[i].alloc, (void*) base, size);
-            assert(b);
+            extalloc_free(map->regions[i].alloc, base, size);
             map->regions[i].active--;
         }
     }
