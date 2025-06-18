@@ -14,7 +14,7 @@ int main(void) {
     });
     assert(map);
 
-    bool ok = boxmap_reserve(map, gb(1024));
+    bool ok = boxmap_reserve(map, gb(32));
     assert(ok);
     printf("total size: %ld\n", (long) boxmap_size(map));
 
