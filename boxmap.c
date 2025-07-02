@@ -90,13 +90,6 @@ static bool addregion(struct BoxMap* map, void* base, size_t size) {
     if (!alloc)
         return false;
 
-    void* region = mmap((void*) alignbase, alignsize, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, -1, 0);
-    if (region != (void*) alignbase) {
-        free(alloc);
-        g_err = "boxmap: cannot mmap";
-        return false;
-    }
-
     // Reserve the guard regions on either end of the new region.
     extalloc_allocat(alloc, alignbase, map->opts.guardsize);
     extalloc_allocat(alloc, alignbase + alignsize - map->opts.guardsize, map->opts.guardsize);
