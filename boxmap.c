@@ -28,7 +28,7 @@ static size_t tb(size_t x) {
 }
 
 struct BoxMap* boxmap_new(struct BoxMapOptions opts) {
-    struct BoxMap* map = calloc(sizeof(struct BoxMap), 1);
+    struct BoxMap* map = calloc(1, sizeof(struct BoxMap));
     if (!map)
         return NULL;
     map->opts = opts;
