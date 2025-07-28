@@ -39,5 +39,7 @@ int main(void) {
 
     boxmap_rmspace(map, space, gb(44));
 
+    boxmap_delete(map);
+
     return 0;
 }

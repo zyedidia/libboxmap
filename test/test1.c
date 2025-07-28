@@ -25,5 +25,7 @@ int main(void) {
     printf("space: %lx\n", space);
     boxmap_rmspace(map, space, gb(4));
 
+    boxmap_delete(map);
+
     return 0;
 }
